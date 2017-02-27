@@ -44,3 +44,6 @@ config.guess
 config.sub
 compile
 *.in
+
+# Hidden files
+.deps/

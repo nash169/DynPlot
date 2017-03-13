@@ -5,30 +5,35 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
+#include <stdio.h>
 
 class Display
 {
 public:
-	Display();
-
 	Display( const std::string& title, int width, int height );
 
-	void Set( const std::string& title, int width, int height );
+	Display();
+
+	virtual ~Display();
 
 	void Clear(float r, float b, float g, float a);
 
 	void Update();
 
-	bool isClosed();
+	void SetRecorder(const std::string& savePath);
 
-	virtual ~Display();
+	bool isClosed();
 
 protected:
 
 private:
 	GLFWwindow* m_window;
 
-	bool m_isClosed;
+	bool m_isClosed, record;
+	int x, y, *buffer, dummy;
+
+	char *fname;
+	FILE *ffmpeg;
 
 };
 

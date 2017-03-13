@@ -6,5 +6,6 @@
 #include "dynplot/light.h"
 #include "dynplot/shader.h"
 #include "dynplot/model.h"
+#include "dynplot/writer.h"
 
 #endif // DYNPLOT_H

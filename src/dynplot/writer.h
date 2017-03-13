@@ -33,7 +33,9 @@ struct Character {
 class Writer
 {
 public:
-	Writer(const std::string& fontPath);
+	Writer(const std::string& fontPath,
+  			 const std::string& vertexPath,
+  			 const std::string& fragmentPath);
 
 	Writer();
 

@@ -23,7 +23,7 @@ AC_PROG_RANLIB
 AC_LANG(C++)
 
 # Set C++ compiler
-AC_PROG_CXX
+AC_PROG_CXX(g++-6)
 
 # Makefiles location
 AC_CONFIG_FILES([Makefile src/Makefile])

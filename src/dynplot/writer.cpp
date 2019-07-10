@@ -1,46 +1,42 @@
-#include "dynplot/writer.h"
-
+#include "dynplot/writer.hpp"
 
 Writer::Writer(const std::string& fontPath,
-							 const std::string& vertexPath,
-							 const std::string& fragmentPath)
+    const std::string& vertexPath,
+    const std::string& fragmentPath)
 {
-	/* Enable blending, necessary for our alpha texture */
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    /* Enable blending, necessary for our alpha texture */
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    shader_prog = Shader::LoadShaders(vertexPath.c_str(), fragmentPath.c_str());
+    uniforms[TEX] = glGetUniformLocation(shader_prog, "text");
+    uniforms[COLOR] = glGetUniformLocation(shader_prog, "textColor");
+    uniforms[PROJECTION] = glGetUniformLocation(shader_prog, "projection");
 
-	shader_prog = Shader::LoadShaders(vertexPath.c_str(), fragmentPath.c_str());
-	uniforms[TEX] = glGetUniformLocation(shader_prog, "text");
-	uniforms[COLOR] = glGetUniformLocation(shader_prog, "textColor");
-	uniforms[PROJECTION] = glGetUniformLocation(shader_prog, "projection");
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(800), 0.0f, static_cast<GLfloat>(600));
 
-	glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(800), 0.0f, static_cast<GLfloat>(600));
+    glUseProgram(shader_prog);
 
-  glUseProgram(shader_prog);
+    glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-  glUniformMatrix4fv(glGetUniformLocation(shader_prog, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    if (FT_Init_FreeType(&ft)) {
+        fprintf(stderr, "Could not init freetype library\n");
+    }
 
-	if(FT_Init_FreeType(&ft)) {
-  		fprintf(stderr, "Could not init freetype library\n");
-	}
+    if (FT_New_Face(ft, fontPath.c_str(), 0, &face)) {
+        fprintf(stderr, "Could not open font\n");
+    }
 
-	if(FT_New_Face(ft, fontPath.c_str(), 0, &face)) {
-  		fprintf(stderr, "Could not open font\n");
-	}
-
-	// Set size to load glyphs as
+    // Set size to load glyphs as
     FT_Set_Pixel_Sizes(face, 0, 48);
 
     // Disable byte-alignment restriction
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // Load first 128 characters of ASCII set
-    for (GLubyte c = 0; c < 128; c++)
-    {
+    for (GLubyte c = 0; c < 128; c++) {
         // Load character glyph
-        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-        {
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
             std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
             continue;
         }
@@ -56,8 +52,7 @@ Writer::Writer(const std::string& fontPath,
             0,
             GL_RED,
             GL_UNSIGNED_BYTE,
-            face->glyph->bitmap.buffer
-        );
+            face->glyph->bitmap.buffer);
         // Set texture options
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -68,8 +63,7 @@ Writer::Writer(const std::string& fontPath,
             texture,
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            face->glyph->advance.x
-        };
+            face->glyph->advance.x};
         Characters.insert(std::pair<GLchar, Character>(c, character));
     }
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -87,14 +81,12 @@ Writer::Writer(const std::string& fontPath,
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
 }
 
 Writer::Writer() {}
 
 Writer::~Writer()
 {
-
 }
 
 void Writer::Print(std::string text)
@@ -117,8 +109,7 @@ void Writer::RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, g
 
     // Iterate through all characters
     std::string::const_iterator c;
-    for (c = text.begin(); c != text.end(); c++)
-    {
+    for (c = text.begin(); c != text.end(); c++) {
         Character ch = Characters[*c];
 
         GLfloat xpos = x + ch.Bearing.x * scale;
@@ -128,14 +119,13 @@ void Writer::RenderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, g
         GLfloat h = ch.Size.y * scale;
         // Update VBO for each character
         GLfloat vertices[6][4] = {
-            { xpos,     ypos + h,   0.0, 0.0 },
-            { xpos,     ypos,       0.0, 1.0 },
-            { xpos + w, ypos,       1.0, 1.0 },
+            {xpos, ypos + h, 0.0, 0.0},
+            {xpos, ypos, 0.0, 1.0},
+            {xpos + w, ypos, 1.0, 1.0},
 
-            { xpos,     ypos + h,   0.0, 0.0 },
-            { xpos + w, ypos,       1.0, 1.0 },
-            { xpos + w, ypos + h,   1.0, 0.0 }
-        };
+            {xpos, ypos + h, 0.0, 0.0},
+            {xpos + w, ypos, 1.0, 1.0},
+            {xpos + w, ypos + h, 1.0, 0.0}};
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
         // Update content of VBO memory

@@ -1,26 +1,23 @@
-#ifndef LIGHT_H
-#define LIGHT_H
+#ifndef LIGHT_HPP
+#define LIGHT_HPP
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-
-class Light
-{
+class Light {
 public:
     Light(const glm::vec3& lightPosition)
     {
-    	this->lightPosition = lightPosition;
+        this->lightPosition = lightPosition;
     }
 
     inline glm::vec3 GetLightPos() { return lightPosition; }
 
 protected:
-
 private:
     glm::vec3 lightPosition;
     glm::vec3 lightPower;
     glm::vec3 lightDirection;
 };
 
-#endif // LIGHT_H
+#endif // LIGHT_HPP
